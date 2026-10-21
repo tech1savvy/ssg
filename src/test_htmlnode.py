@@ -13,6 +13,14 @@ class TestHTMLNode(unittest.TestCase):
         props_str = node.props_to_html()
         self.assertEqual(props_str, ' href="https://www.boot.dev" target="_blank"')
 
+    def test_props_to_html_none(self):
+        node = HTMLNode("p", "Hello, world!")
+        self.assertEqual(node.props_to_html(), "")
+
+    def test_props_to_html_empty(self):
+        node = HTMLNode("p", "Hello, world!", props={})
+        self.assertEqual(node.props_to_html(), "")
+
     def test_values(self):
         node = HTMLNode(
             "div",
@@ -46,6 +54,11 @@ class TestHTMLNode(unittest.TestCase):
             node.__repr__(),
             "HTMLNode(p, What a strange world, children: None, {'class': 'primary'})",
         )
+
+    def test_to_html_not_implemented(self):
+        node = HTMLNode("p", "Hello, world!")
+        with self.assertRaises(NotImplementedError):
+            node.to_html()
 
 
 if __name__ == "__main__":
