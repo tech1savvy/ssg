@@ -1,6 +1,8 @@
 import os
 import shutil
 
+from ssg.generate import genrate_page
+
 
 def main() -> None:
     # Prepare public
@@ -8,6 +10,9 @@ def main() -> None:
         shutil.rmtree("public")
     os.mkdir("public")
     rcp("static", "public")
+
+    #  Genrate html pages
+    genrate_page("content/index.md", "template.html", "public/index.html")
 
 
 def rcp(source, destination):
