@@ -1,5 +1,6 @@
 import unittest
 
+from ssg.html.parent import ParentNode
 from ssg.markdown.inline import InlineNode, InlineType
 from ssg.render import (
     render_block_node,
@@ -143,42 +144,62 @@ class TestRenderBlockNode(unittest.TestCase):
         node = render_block_node("- one\n- two")
         self.assertEqual(node.to_html(), "<ul><li>one</li><li>two</li></ul>")
 
+    def test_unordered_list_with_inline_formatting(self):
+        node = render_block_node("- Disney _didn't ruin it_\n- **bold**")
+        self.assertEqual(
+            node.to_html(),
+            "<ul><li>Disney <i>didn't ruin it</i></li><li><b>bold</b></li></ul>",
+        )
+
     def test_ordered_list(self):
         node = render_block_node("1. one\n2. two")
         print(node)
         self.assertEqual(node.to_html(), "<ol><li>one</li><li>two</li></ol>")
 
+    def test_ordered_list_with_inline_formatting(self):
+        node = render_block_node("1. _first_\n2. [link](/x)")
+        self.assertEqual(
+            node.to_html(),
+            '<ol><li><i>first</i></li><li><a href="/x">link</a></li></ol>',
+        )
+
 
 class TestRenderMarkdown(unittest.TestCase):
+    def test_returns_root_div(self):
+        node = render_markdown("# Hello")
+        self.assertIsInstance(node, ParentNode)
+        self.assertEqual(node.tag, "div")
+
+    def test_empty_markdown(self):
+        node = render_markdown("")
+        self.assertEqual(node.to_html(), "<div></div>")
+
     def test_heading_with_level(self):
-        nodes = render_markdown("## Hello")
-        self.assertEqual(len(nodes), 1)
-        self.assertEqual(nodes[0].to_html(), "<h2>Hello</h2>")
+        node = render_markdown("## Hello")
+        self.assertEqual(node.to_html(), "<div><h2>Hello</h2></div>")
 
     def test_heading_with_inline_formatting(self):
-        nodes = render_markdown("### Hi **there**")
-        self.assertEqual(nodes[0].to_html(), "<h3>Hi <b>there</b></h3>")
+        node = render_markdown("### Hi **there**")
+        self.assertEqual(node.to_html(), "<div><h3>Hi <b>there</b></h3></div>")
 
     def test_code_block(self):
-        nodes = render_markdown("```\nprint('hello world')\n```")
+        node = render_markdown("```\nprint('hello world')\n```")
         self.assertEqual(
-            nodes[0].to_html(), "<pre><code>print('hello world')</code></pre>"
+            node.to_html(),
+            "<div><pre><code>print('hello world')</code></pre></div>",
         )
 
     def test_heading_and_code(self):
         markdown = "# Title\n\n```\nvalue = 1\n```"
-        nodes = render_markdown(markdown)
+        node = render_markdown(markdown)
         self.assertEqual(
-            "".join(node.to_html() for node in nodes),
-            "<h1>Title</h1><pre><code>value = 1</code></pre>",
+            node.to_html(),
+            "<div><h1>Title</h1><pre><code>value = 1</code></pre></div>",
         )
 
     def test_paragraph(self):
-        nodes = render_markdown("This is **bold** text")
-        self.assertEqual(
-            "".join(node.to_html() for node in nodes),
-            "<p>This is <b>bold</b> text</p>",
-        )
+        node = render_markdown("This is **bold** text")
+        self.assertEqual(node.to_html(), "<div><p>This is <b>bold</b> text</p></div>")
 
     def test_large_document(self):
         markdown = (
@@ -186,7 +207,7 @@ class TestRenderMarkdown(unittest.TestCase):
             "Intro with **bold**, _italic_, and `code`.\n\n"
             "> quoted **text**\n"
             "> second line\n\n"
-            "- first\n"
+            "- _first_\n"
             "- second\n\n"
             "1. one\n"
             "2. two\n\n"
@@ -194,15 +215,17 @@ class TestRenderMarkdown(unittest.TestCase):
             'print("hi")\n'
             "```"
         )
-        nodes = render_markdown(markdown)
+        node = render_markdown(markdown)
         self.assertEqual(
-            "".join(node.to_html() for node in nodes),
+            node.to_html(),
+            "<div>"
             "<h1>Title</h1>"
             "<p>Intro with <b>bold</b>, <i>italic</i>, and <code>code</code>.</p>"
             "<blockquote>quoted <b>text</b>\nsecond line</blockquote>"
-            "<ul><li>first</li><li>second</li></ul>"
+            "<ul><li><i>first</i></li><li>second</li></ul>"
             "<ol><li>one</li><li>two</li></ol>"
-            '<pre><code>print("hi")</code></pre>',
+            '<pre><code>print("hi")</code></pre>'
+            "</div>",
         )
 
 

@@ -14,13 +14,13 @@ from ssg.markdown.blocks import (
 from ssg.markdown.inline import InlineNode, InlineType, parse_inline
 
 
-def render_markdown(markdown: str) -> list[HTMLNode]:
-    nodes = []
+def render_markdown(markdown: str) -> ParentNode:
+    children = []
     for block in split_blocks(markdown):
         node = render_block_node(block)
         if node is not None:
-            nodes.append(node)
-    return nodes
+            children.append(node)
+    return ParentNode("html", children)
 
 
 def render_inline(text: str) -> list[HTMLNode]:
@@ -52,12 +52,16 @@ def render_block_node(block: str) -> HTMLNode | None:
     # Unordered Lists
     if block_type == BlockType.UNORDERED_LIST:
         items = extract_unordered_list_items(block)
-        return ParentNode("ul", [LeafNode("li", item) for item in items])
+        return ParentNode(
+            "ul", [ParentNode("li", render_inline(item)) for item in items]
+        )
 
     # Ordered Lists
     if block_type == BlockType.ORDERED_LIST:
         items = extract_ordered_list_items(block)
-        return ParentNode("ol", [LeafNode("li", item) for item in items])
+        return ParentNode(
+            "ol", [ParentNode("li", render_inline(item)) for item in items]
+        )
 
     return None
 
