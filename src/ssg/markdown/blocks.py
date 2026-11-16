@@ -10,7 +10,7 @@ class BlockType(Enum):
     ORDERED_LIST = "ordered_list"
 
 
-def block_to_block_type(block: str) -> BlockType:
+def classify_block(block: str) -> BlockType:
     # Heading
     if block.startswith(("# ", "## ", "### ", "#### ", "##### ", "###### ")):
         return BlockType("heading")
@@ -51,3 +51,42 @@ def block_to_block_type(block: str) -> BlockType:
             return BlockType("ordered_list")
 
     return BlockType("paragraph")
+
+
+def split_blocks(text: str) -> list[str]:
+    blocks = []
+    unfiltered_blocks = text.split("\n\n")
+    for block in unfiltered_blocks:
+        if block == "":
+            continue
+        blocks.append(block.strip())
+    return blocks
+
+
+def extract_heading(block: str) -> tuple[int, str]:
+    parts = block.split(maxsplit=1)
+    level = parts[0].count("#")
+    text = parts[1] if len(parts) > 1 else ""
+    return level, text
+
+
+def extract_code(block: str) -> str:
+    return block.removeprefix("```\n").removesuffix("\n```")
+
+
+def extract_quote(block: str) -> str:
+    lines = block.split("\n")
+    cleaned_lines = [line.lstrip("> ") for line in lines]
+    return "\n".join(cleaned_lines)
+
+
+def extract_unordered_list_items(block: str) -> list[str]:
+    lines = block.split("\n")
+    cleaned_lines = [line.lstrip("- ") for line in lines]
+    return cleaned_lines
+
+
+def extract_ordered_list_items(block: str) -> list[str]:
+    lines = block.split("\n")
+    cleaned_lines = [line.split(". ")[1] for line in lines]
+    return cleaned_lines
