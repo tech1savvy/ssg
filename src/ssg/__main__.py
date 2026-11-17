@@ -13,14 +13,14 @@ def main() -> None:
     if len(args) >= 2 and args[1] != "":
         base_path = args[1]
 
-    # Prepare public
-    if os.path.exists("public"):
-        shutil.rmtree("public")
-    os.mkdir("public")
-    rcp("static", "public")
+    # Prepare docs
+    if os.path.exists("docs"):
+        shutil.rmtree("docs")
+    os.mkdir("docs")
+    rcp("static", "docs")
 
     #  Genrate html pages
-    genrate_pages_recursive("content", "template.html", "public", base_path)
+    genrate_pages_recursive("content", "template.html", "docs", base_path)
 
 
 def rcp(source, destination):
