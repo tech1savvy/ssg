@@ -12,7 +12,7 @@ def extract_title(markdown) -> str:
     return heading
 
 
-def genrate_page(from_path, template_path, dest_dir):
+def genrate_page(from_path, template_path, dest_dir, base_path):
     dest_path = os.path.join(
         dest_dir, os.path.basename(from_path).split(".")[0] + ".html"
     )
@@ -28,21 +28,23 @@ def genrate_page(from_path, template_path, dest_dir):
 
     html_content = render_markdown(markdown_content).to_html()
     title = extract_title(markdown_content)
-    template_content.replace("{{ Title }}", title)
-    template_content.replace("{{ Content }}", html_content)
+    template_content = template_content.replace("{{ Title }}", title)
+    template_content = template_content.replace("{{ Content }}", html_content)
+    template_content = template_content.replace('href="/', f'href="{base_path}')
+    template_content = template_content.replace('src="/', f'src="{base_path}')
 
     dest_dir = os.path.dirname(dest_path)
     if not os.path.exists(dest_dir):
         os.makedirs(dest_dir)
 
     html_file = open(dest_path, "w")
-    html_file.write(html_content)
+    html_file.write(template_content)
 
 
-def genrate_pages_recursive(content_path, template_path, dest_path):
+def genrate_pages_recursive(content_path, template_path, dest_path, base_path):
     dest_dir = os.path.dirname(dest_path)
     if os.path.isfile(content_path):
-        genrate_page(content_path, template_path, dest_dir)
+        genrate_page(content_path, template_path, dest_dir, base_path)
     else:
         for content in os.listdir(content_path):
             nested_content_path = os.path.join(content_path, content)
@@ -50,8 +52,10 @@ def genrate_pages_recursive(content_path, template_path, dest_path):
             nested_dest_dir = os.path.dirname(nested_dest_path)
 
             if os.path.isfile(nested_content_path):
-                genrate_page(nested_content_path, template_path, nested_dest_dir)
+                genrate_page(
+                    nested_content_path, template_path, nested_dest_dir, base_path
+                )
             else:
                 genrate_pages_recursive(
-                    nested_content_path, template_path, nested_dest_path
+                    nested_content_path, template_path, nested_dest_path, base_path
                 )

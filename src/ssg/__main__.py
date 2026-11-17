@@ -1,10 +1,18 @@
 import os
 import shutil
+import sys
 
-from ssg.generate import genrate_page, genrate_pages_recursive
+from ssg.generate import genrate_pages_recursive
 
 
 def main() -> None:
+    base_path = "/"
+
+    # Parse cli args
+    args = sys.argv
+    if len(args) >= 2 and args[1] != "":
+        base_path = args[1]
+
     # Prepare public
     if os.path.exists("public"):
         shutil.rmtree("public")
@@ -12,7 +20,7 @@ def main() -> None:
     rcp("static", "public")
 
     #  Genrate html pages
-    genrate_pages_recursive("content", "template.html", "public")
+    genrate_pages_recursive("content", "template.html", "public", base_path)
 
 
 def rcp(source, destination):
