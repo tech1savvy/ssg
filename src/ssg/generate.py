@@ -12,7 +12,11 @@ def extract_title(markdown) -> str:
     return heading
 
 
-def genrate_page(from_path, template_path, dest_path):
+def genrate_page(from_path, template_path, dest_dir):
+    dest_path = os.path.join(
+        dest_dir, os.path.basename(from_path).split(".")[0] + ".html"
+    )
+
     print(f"Generating page from {from_path} to {dest_path} using {template_path}")
     markdown_file = open(from_path)
     markdown_content = markdown_file.read()
@@ -33,3 +37,21 @@ def genrate_page(from_path, template_path, dest_path):
 
     html_file = open(dest_path, "w")
     html_file.write(html_content)
+
+
+def genrate_pages_recursive(content_path, template_path, dest_path):
+    dest_dir = os.path.dirname(dest_path)
+    if os.path.isfile(content_path):
+        genrate_page(content_path, template_path, dest_dir)
+    else:
+        for content in os.listdir(content_path):
+            nested_content_path = os.path.join(content_path, content)
+            nested_dest_path = os.path.join(dest_path, content)
+            nested_dest_dir = os.path.dirname(nested_dest_path)
+
+            if os.path.isfile(nested_content_path):
+                genrate_page(nested_content_path, template_path, nested_dest_dir)
+            else:
+                genrate_pages_recursive(
+                    nested_content_path, template_path, nested_dest_path
+                )

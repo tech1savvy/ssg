@@ -1,7 +1,7 @@
 import os
 import shutil
 
-from ssg.generate import genrate_page
+from ssg.generate import genrate_page, genrate_pages_recursive
 
 
 def main() -> None:
@@ -12,7 +12,7 @@ def main() -> None:
     rcp("static", "public")
 
     #  Genrate html pages
-    genrate_page("content/index.md", "template.html", "public/index.html")
+    genrate_pages_recursive("content", "template.html", "public")
 
 
 def rcp(source, destination):
